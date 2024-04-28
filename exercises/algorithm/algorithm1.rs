@@ -2,11 +2,10 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
-use std::vec::*;
+// use std::vec::*;
 
 #[derive(Debug)]
 struct Node<T> {
@@ -70,13 +69,52 @@ impl<T> LinkedList<T> {
         }
     }
 	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
+    where T: PartialOrd
 	{
-		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+        let mut start = None;
+        let mut end = None;
+        let mut current = None;
+        let mut current_a = list_a.start;
+        let mut current_b = list_b.start;
+        while let (Some(node_a), Some(node_b)) = (current_a, current_b) {
+            let min_node = if unsafe { (*node_a.as_ptr()).val <= (*node_b.as_ptr()).val } {
+                current_a = unsafe { (*node_a.as_ptr()).next };
+                Some(node_a)
+            } else {
+                current_b = unsafe { (*node_b.as_ptr()).next };
+                Some(node_b)
+            };
+            if start == None {
+                start = min_node;
+                current = min_node;
+            } else {
+                unsafe {
+                    (*current.unwrap().as_ptr()).next = min_node;
+                }
+                current = min_node;
+            }
+            if current_a == None {
+                unsafe { (*current.unwrap().as_ptr()).next = current_b };
+                let mut end_b = current_b;
+                while let Some(node) = end_b {
+                    end = Some(node);
+                    end_b = unsafe { (*node.as_ptr()).next };
+                }
+            }
+            if current_b == None {
+                unsafe { (*current.unwrap().as_ptr()).next = current_a };
+                let mut end_a = current_a;
+                while let Some(node) = end_a {
+                    end = Some(node);
+                    end_a = unsafe { (*node.as_ptr()).next };
+                }
+            }
         }
+        return Self {
+            start,
+            end,
+            length: list_a.length + list_b.length,
+        };
 	}
 }
 
