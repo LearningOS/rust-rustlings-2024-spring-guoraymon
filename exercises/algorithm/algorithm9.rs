@@ -2,7 +2,6 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -37,7 +36,9 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        self.count += 1;
+        self.items.push(value);
+        self.sift_up(self.len());
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -57,8 +58,39 @@ where
     }
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+        let (l, r) = (self.left_child_idx(idx), self.right_child_idx(idx));
+        if r > self.count {
+            return l;
+        }
+        if (self.comparator)(&self.items[l], &self.items[r]) {
+            l
+        } else {
+            r
+        }
+    }
+
+    fn sift_up(&mut self, mut idx: usize) {
+        while idx > 1 {
+            let p = self.parent_idx(idx);
+            if (self.comparator)(&self.items[idx], &self.items[p]) {
+                self.items.swap(idx, p);
+                idx = p;
+            } else {
+                break;
+            }
+        }
+    }
+
+    fn sift_down(&mut self, mut idx: usize) {
+        while self.children_present(idx) {
+            let smallest_child_idx = self.smallest_child_idx(idx);
+            if (self.comparator)(&self.items[smallest_child_idx], &self.items[idx]) {
+                self.items.swap(smallest_child_idx, idx);
+                idx = smallest_child_idx;
+            } else {
+                break;
+            }
+        }
     }
 }
 
@@ -84,8 +116,13 @@ where
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.is_empty() {
+            return None;
+        }
+        let res = self.items.swap_remove(1);
+        self.count -= 1;
+        self.sift_down(1);
+        Some(res)
     }
 }
 
